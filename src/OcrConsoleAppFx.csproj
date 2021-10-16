@@ -44,6 +44,8 @@
     <Compile Include="AlternativePreProcessor\HSLBounds.cs" />
     <Compile Include="AlternativePreProcessor\HSLColor.cs" />
     <Compile Include="ImageExtensions.cs" />
+    <Compile Include="OcrReaders\TesseractProcessor.cs" />
+    <Compile Include="OcrReaders\IronOcrProcessor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -64,9 +66,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Images\Position102.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Images\Position103.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Images\Position11.png">
@@ -363,8 +362,14 @@
     <Content Include="tessdata\eng.traineddata">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="TruthCoords.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="IronOcr">
+      <Version>2021.9.0</Version>
+    </PackageReference>
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
     <PackageReference Include="System.Buffers" Version="4.5.1" />
     <PackageReference Include="System.Memory" Version="4.5.4" />
