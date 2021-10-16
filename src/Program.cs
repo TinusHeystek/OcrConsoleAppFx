@@ -40,14 +40,15 @@ namespace OcrConsoleAppFx
             var fileName = $"Position{number}.png";
             var byteArray = File.ReadAllBytes(Path.Combine(ImageDirectory, fileName));
 
-            var processedByteArray = AlternativePreProcessor.PreprocessImage(byteArray);
+            var processedByteArray = AlternativePreProcessor.PreprocessImage(byteArray, false);
             //var processedByteArray = PreprocessImage(byteArray);
             if (processedByteArray == null)
                 return;
-                
+            
             File.WriteAllBytes(Path.Combine(ProcessDirectory, fileName), processedByteArray);
             var output = ReadOcrText(processedByteArray);
-            Console.WriteLine("OCR Output : " + number + " --> " + output);
+
+            Console.WriteLine("OCR Output : " + number + " --> " + output );
         }
 
         private static string ReadOcrText(byte[] byteArray)
