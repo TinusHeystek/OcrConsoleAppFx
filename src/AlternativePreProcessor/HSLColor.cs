@@ -1,4 +1,6 @@
-﻿using System;
+﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -69,14 +71,13 @@ namespace OcrConsoleAppFx
             return new HSLColor(H, S, L);
         }
 
-        public bool IsInBounds(HSLBounds bounds)
+        public static HSLColor ColorOfPixel(Image<Rgba32> image, int x, int y)
         {
-            return Hue >= bounds.HMin
-                && Hue <= bounds.HMax
-                && Saturation >= bounds.SMin
-                && Saturation <= bounds.SMax
-                && Luminosity >= bounds.LMin
-                && Luminosity <= bounds.LMax;
+            var R = image[x, y].R;
+            var G = image[x, y].G;
+            var B = image[x, y].B;
+
+            return HSLColor.FromRGB(R, G, B);
         }
     }
 }
