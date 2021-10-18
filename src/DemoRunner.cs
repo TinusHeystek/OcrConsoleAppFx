@@ -6,24 +6,40 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace OcrConsoleAppFx
 {
-    public static class DemoRunner
+    public class DemoRunner
     {
         private static Pixel _reference = null;
-        public static void Run()
+        private Processor _processor = null;
+        private readonly Regex _rgx = new Regex(@"^[0-9]{1,5}(?:.[0-9]{3})?$");
+        private int _failureCount = -1;
+
+        public void Run()
         {
+            _processor = new Processor(true);
             Console.Clear();
             int i = 0;
             while (true)
             {
-                if (i % 1000 == 0)
+                if (_failureCount == -1 || (_failureCount > 50 && _failureCount%10 == 0) )
                 {
                     _reference = FindBracketLocation();
+                    if (_reference != null)
+                    {
+                        var height = Screen.PrimaryScreen.Bounds.Height;
+                        var width = Screen.PrimaryScreen.Bounds.Width;
+                        Console.WriteLine();
+                        Console.WriteLine($"Height: {height}");
+                        Console.WriteLine($"Width: {width}");
+                        Console.WriteLine($"Reference Pixel is {_reference.Y} pixels from the TOP & {width - _reference.X} pixels from the RIGHT");
+                        Console.WriteLine();
+                    }
                 }
 
                 if (_reference != null)
@@ -32,20 +48,34 @@ namespace OcrConsoleAppFx
 
                     if (byteArray != null)
                     {
-                        var result = Processor.ProcessImage(byteArray, _reference);
-                        Console.Write("\r{0}", result);
+                        var result = _processor.ProcessImage(byteArray);
+
+                        var results = result.Split(' ');
+
+                        if (results.Any(r => !_rgx.IsMatch(r)))
+                        {
+                            _failureCount++;
+
+                            // just for testing now -> TBR
+                            Console.Write("\r{0}", result);
+                        }
+                        else {
+                            Console.Write("\r{0}", result);
+                            _failureCount = 0;
+                        }                                      
                     }               
                 }
                 else 
                 {
-                        Console.Write("\rNo Coordinates found on screen ");
+                    _failureCount++;
+                    Console.Write("\rNo Coordinates found on screen ");
                 }
-                Thread.Sleep(10);
+                Thread.Sleep(100);
                 i++;
             }
         }
 
-        private static byte[] CapturePartOfScreen()
+        private byte[] CapturePartOfScreen()
         {
             try
             {
@@ -54,7 +84,7 @@ namespace OcrConsoleAppFx
                 g.CopyFromScreen(0, 0, 0, 0, bm.Size);
 
 
-                System.Drawing.Rectangle cropRect = new System.Drawing.Rectangle(_reference.X - 260, _reference.Y, 270, 14);
+                System.Drawing.Rectangle cropRect = new System.Drawing.Rectangle(_reference.X - 274, _reference.Y, 284, 14);
 
                 Bitmap target = new Bitmap(cropRect.Width, cropRect.Height);
 
@@ -66,7 +96,7 @@ namespace OcrConsoleAppFx
 
 
                 }
-                target.Save(@"D:\Test123.bmp", ImageFormat.Bmp);
+                //target.Save(@"D:\Test123.bmp", ImageFormat.Bmp);
 
                 return ImageToByte(target);
             }
@@ -78,20 +108,20 @@ namespace OcrConsoleAppFx
 
         }
 
-        public static byte[] ImageToByte(Bitmap img)
+        public byte[] ImageToByte(Bitmap img)
         {
             ImageConverter converter = new ImageConverter();
             return (byte[])converter.ConvertTo(img, typeof(byte[]));
         }
 
-        private static Pixel FindBracketLocation()
+        private Pixel FindBracketLocation()
         {
             var screenshot = TopBarScreenShot();
             return FindCoordinates(screenshot);
    
         }
 
-        private static byte[] TopBarScreenShot()
+        private byte[] TopBarScreenShot()
         {
             try
             {
@@ -134,7 +164,8 @@ namespace OcrConsoleAppFx
                     {
                         var hslColor = HSLColor.ColorOfPixel(image, x, y);
 
-                        if (hslColor.Hue == 60
+                        if (hslColor.Hue >= 58 
+                        && hslColor.Hue <= 66
                         && image.Height - y > 12
                         && IsFullYellowPixel(image, x - 1, y)
                         && IsFullYellowPixel(image, x, y + 1)
@@ -166,7 +197,7 @@ namespace OcrConsoleAppFx
         private static bool IsFullYellowPixel(Image<Rgba32> image, int x, int y)
         {
             var hsl = HSLColor.ColorOfPixel(image, x, y);
-            return hsl.Hue == 60 && hsl.Luminosity > 0.8f;
+            return hsl.Hue >= 58 && hsl.Hue <= 66 && hsl.Luminosity > 0.7f;
         }
     }
 }

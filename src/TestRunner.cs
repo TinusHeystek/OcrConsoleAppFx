@@ -11,8 +11,9 @@ using System.Windows.Forms;
 
 namespace OcrConsoleAppFx
 {
-    public static class TestRunner
+    public class TestRunner
     {
+        private Processor _processor = null;
         private const string ImageDirectory = @"Captures";
         private const string ProcessDirectory = @"Images\Processed";
 
@@ -23,8 +24,9 @@ namespace OcrConsoleAppFx
         private static Stopwatch _sw;
         private static readonly Pixel _reference = new Pixel(260,1);
 
-        public static void Run()
+        public void Run()
         {
+            _processor = new Processor(false);
             Cleanup();
             _sw = Stopwatch.StartNew();
             for (int i = 0; i < _imagesCount; i++)
@@ -36,7 +38,7 @@ namespace OcrConsoleAppFx
             WriteResults();
         }
 
-        private static void WriteResults()
+        private void WriteResults()
         {
             string accuracy = ((decimal)_matchCounter / _imagesCount).ToString("0.00%");
 
@@ -53,7 +55,7 @@ namespace OcrConsoleAppFx
             Console.ReadKey();
         }
 
-        private static void Cleanup()
+        private void Cleanup()
         {
             if (!Directory.Exists(ProcessDirectory))
                 Directory.CreateDirectory(ProcessDirectory);
@@ -64,12 +66,12 @@ namespace OcrConsoleAppFx
             }
         }
 
-        private static void ProcessImage(int number)
+        private void ProcessImage(int number)
         {
             var fileName = $"Capture_{number}.bmp";
             var byteArray = File.ReadAllBytes(Path.Combine(ImageDirectory, fileName));
 
-            var results = Processor.ProcessImage(byteArray, _reference);
+            var results = _processor.ProcessImage(byteArray);
 
             if (_truth[number].Equals(results))
             {

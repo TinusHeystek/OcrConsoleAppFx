@@ -26,10 +26,10 @@ namespace OcrConsoleAppFx
             switch (mode)
             {
                 case RunMode.Demo:
-                    DemoRunner.Run();
+                    new DemoRunner().Run();
                     break;
                 case RunMode.Test:
-                    TestRunner.Run();
+                    new TestRunner().Run();
                     break;
                 default:
                     break;

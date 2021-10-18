@@ -5,6 +5,7 @@ using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -18,42 +19,60 @@ namespace OcrConsoleAppFx
     /// </summary>
     public class Processor
     {
+        private bool _isWindowMode = false;
+        private readonly int _appliedHMax = 65;
+        private readonly int _fullscreenHMax = 65;
+        private readonly int _windowedHMax = 80;
+
+        public Processor(bool isWindowMode)
+        {
+            _isWindowMode = isWindowMode;
+
+            _appliedHMax = _isWindowMode ? _windowedHMax : _fullscreenHMax;
+        }
+
         /// <summary>
         /// Execute the Processing
         /// </summary>
         /// <param name="byteArray">Image as a byte array</param>
         /// <returns>PreProcessed byte array</returns>
-        public static string ProcessImage(byte[] byteArray, Pixel reference)
+        public string ProcessImage(byte[] byteArray)
         {
             using (var img = Image.Load(byteArray))
             {
                 string text = string.Empty;
-                
+                int j = 0;
                 for (int i = 0; i < 30; i++)
-                {
-                   
-                    var rect = new Rectangle(img.Width - 23 - (9 * i), 0, 9, 14);
+                {                 
+                    var rect = new Rectangle(img.Width - 23 - (9 * i) + j, 0, 9, 14);
                     if (rect.X < 0) continue;
                     var newImg = img.Clone();
                     newImg.Mutate(x => x.Crop(rect));
-                    text = GetChar(newImg) + text;
+                    newImg.SaveAsPng(Path.Combine(Environment.CurrentDirectory, $"_{i}.png"));
+
+                    var newChar = GetChar(newImg);
+                    text = newChar + text;
+                    if (newChar.Equals("?") && _isWindowMode) j++;
+                    
                 }
+                text = text.Replace("?", ".");
                 text = text.TrimStart('.');
                 text = text.Replace(". ", "");
+                
                 text = text.Replace("..", " ");
                 
                 return text;
             }
         }
 
-        private static string GetChar(Image<Rgba32> image)
+        private string GetChar(Image<Rgba32> image)
         {
-            var matchedPixels = GetMatchingPixels(image, 55, 65);
+            var matchedPixels = GetMatchingPixels(image, 55, _appliedHMax);
 
             return GetCharFromMatch(matchedPixels, image);
         }
 
-        private static List<Pixel> GetMatchingPixels(Image<Rgba32> image, int hMin, int hMax)
+        private List<Pixel> GetMatchingPixels(Image<Rgba32> image, int hMin, int hMax)
         {
             ConcurrentBag<Pixel> matchingPixels = new ConcurrentBag<Pixel>();
 
@@ -75,7 +94,7 @@ namespace OcrConsoleAppFx
         }
 
 
-        private static string GetCharFromMatch(List<Pixel> matches, Image<Rgba32> image)
+        private string GetCharFromMatch(List<Pixel> matches, Image<Rgba32> image)
         {
             if (IsMatch(matches, PixelDefinitions.leftBracket) && IsNoMatch(matches, PixelDefinitions.leftBracketNot)) return "."; // No need to return [
             if (IsMatch(matches, PixelDefinitions.char1) && IsNoMatch(matches, PixelDefinitions.char1Not)) return "1";
@@ -88,14 +107,14 @@ namespace OcrConsoleAppFx
             if (IsMatch(matches, PixelDefinitions.char3or8) && IsNoMatch(matches, PixelDefinitions.char3or8Not)) return Isit3Or8(image);                      
             if (IsMatch(matches, PixelDefinitions.char7) && IsNoMatch(matches, PixelDefinitions.char7Not)) return "7";
             if (IsMatch(matches, PixelDefinitions.comma) && IsNoMatch(matches, PixelDefinitions.commaNot)) return "."; // also returns dot here, todo= make OR 
-            if (IsMatch(matches, PixelDefinitions.dot) && IsNoMatch(matches, PixelDefinitions.dotNot)) return ".";
+            if (IsMatch(matches, PixelDefinitions.dot) && IsNoMatch(matches, PixelDefinitions.dotNot)) return "?";
 
             return ".";
         }
 
         
 
-        private static string Isit3Or8(Image<Rgba32> image)
+        private string Isit3Or8(Image<Rgba32> image)
         {
             var matches = GetMatchingPixels(image, 45, 75);
 
@@ -107,13 +126,13 @@ namespace OcrConsoleAppFx
             return "8";
         }
 
-        private static bool IsMatch(List<Pixel> matches, List<Pixel> reference)
+        private bool IsMatch(List<Pixel> matches, List<Pixel> reference)
         {
             var intersectCount = matches.Intersect(reference).Count();
             return intersectCount == reference.Count();
         }
 
-        private static bool IsNoMatch(List<Pixel> matches, List<Pixel> reference)
+        private bool IsNoMatch(List<Pixel> matches, List<Pixel> reference)
         {
             var intersectCount = matches.Intersect(reference).Count();
             return intersectCount == 0;
