@@ -64,7 +64,7 @@ namespace OcrConsoleAppFx
 
                     var hslColor = HSLColor.ColorOfPixel(image, x, y);
 
-                    if (hslColor.Hue >= hMin && hslColor.Hue <= hMax && hslColor.Luminosity > 0.15f)
+                    if (hslColor.Hue >= hMin && hslColor.Hue <= hMax && hslColor.Luminosity > 0.3f)
                     {
                         matchingPixels.Add(new Pixel(x, y));
                     }
@@ -77,7 +77,7 @@ namespace OcrConsoleAppFx
 
         private static string GetCharFromMatch(List<Pixel> matches, Image<Rgba32> image)
         {
-            if (IsMatch(matches, PixelDefinitions.leftBracket) && IsNoMatch(matches, PixelDefinitions.leftBracketNot)) return ""; // No need to return [
+            if (IsMatch(matches, PixelDefinitions.leftBracket) && IsNoMatch(matches, PixelDefinitions.leftBracketNot)) return "."; // No need to return [
             if (IsMatch(matches, PixelDefinitions.char1) && IsNoMatch(matches, PixelDefinitions.char1Not)) return "1";
             if (IsMatch(matches, PixelDefinitions.char4) && IsNoMatch(matches, PixelDefinitions.char4Not)) return "4";
             if (IsMatch(matches, PixelDefinitions.char0) && IsNoMatch(matches, PixelDefinitions.char0Not)) return "0";
