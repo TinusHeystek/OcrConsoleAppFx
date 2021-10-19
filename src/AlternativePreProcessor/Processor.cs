@@ -48,7 +48,7 @@ namespace OcrConsoleAppFx
                     if (rect.X < 0) continue;
                     var newImg = img.Clone();
                     newImg.Mutate(x => x.Crop(rect));
-                    newImg.SaveAsPng(Path.Combine(Environment.CurrentDirectory, $"_{i}.png"));
+                    //newImg.SaveAsPng(Path.Combine(Environment.CurrentDirectory, $"_{i}.png"));
 
                     var newChar = GetChar(newImg);
                     text = newChar + text;
@@ -83,7 +83,7 @@ namespace OcrConsoleAppFx
 
                     var hslColor = HSLColor.ColorOfPixel(image, x, y);
 
-                    if (hslColor.Hue >= hMin && hslColor.Hue <= hMax && hslColor.Luminosity > 0.3f)
+                    if (hslColor.Hue >= hMin && hslColor.Hue <= hMax && hslColor.Luminosity > 0.5f && hslColor.Saturation > 0.1f)
                     {
                         matchingPixels.Add(new Pixel(x, y));
                     }

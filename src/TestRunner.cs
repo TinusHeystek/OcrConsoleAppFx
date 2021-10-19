@@ -53,6 +53,7 @@ namespace OcrConsoleAppFx
             Console.WriteLine();
             Console.WriteLine("\nPress any key to exit");
             Console.ReadKey();
+            Program.Start();
         }
 
         private void Cleanup()

@@ -15,10 +15,16 @@ namespace OcrConsoleAppFx
         private enum RunMode
         {
             Demo,
-            Test
+            Test,
+            Farming
         }
 
         static void Main(string[] args)
+        {
+            Start();
+        }
+
+        public static void Start()
         {
             RunMode mode = ModePrompt();
             Console.WriteLine();
@@ -26,7 +32,10 @@ namespace OcrConsoleAppFx
             switch (mode)
             {
                 case RunMode.Demo:
-                    new DemoRunner().Run();
+                    new DemoRunner().Run(false);
+                    break;
+                case RunMode.Farming:
+                    new DemoRunner().Run(true);
                     break;
                 case RunMode.Test:
                     new TestRunner().Run();
@@ -38,7 +47,8 @@ namespace OcrConsoleAppFx
 
         private static RunMode ModePrompt()
         {
-            Console.WriteLine("Press 0 to run LiveDemo, Press 1 to run tests\n");
+            Console.Clear();
+            Console.WriteLine("Press 0 to run Live Demo Mode \nPress 1 to run Test Mode \nPress 2 to run Farming mode");
             char key = Console.ReadKey().KeyChar;
 
             switch (key)
@@ -47,6 +57,8 @@ namespace OcrConsoleAppFx
                     return RunMode.Demo;
                 case '1':
                     return RunMode.Test;
+                case '2':
+                    return RunMode.Farming;
                 default:
                     ModePrompt();
                         break;

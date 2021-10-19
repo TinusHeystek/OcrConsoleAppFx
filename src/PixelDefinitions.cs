@@ -78,7 +78,7 @@ namespace OcrConsoleAppFx
 
         public static readonly List<Pixel> char3or8 = new List<Pixel>() {
 
-        new Pixel(6,2),
+        //new Pixel(6,2),
         new Pixel(7,3),
         new Pixel(7,8),
         };
@@ -141,7 +141,7 @@ namespace OcrConsoleAppFx
 
         public static readonly List<Pixel> char6 = new List<Pixel>() {
 
-        new Pixel(3,2),
+        //new Pixel(3,2),
         new Pixel(4,5),
         new Pixel(5,5),
         new Pixel(6,6),

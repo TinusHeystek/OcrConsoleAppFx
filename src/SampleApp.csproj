@@ -7,8 +7,8 @@
     <ProjectGuid>{6999125E-9CD3-4326-93F5-B2DF16AF0288}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>OcrConsoleAppFx</RootNamespace>
-    <AssemblyName>OcrConsoleAppFx</AssemblyName>
+    <RootNamespace>SampleApp</RootNamespace>
+    <AssemblyName>SampleApp</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -327,6 +327,18 @@
     </Content>
     <Content Include="Captures\Capture_91.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Captures\Capture_92.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Captures\Capture_93.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Captures\Capture_94.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Captures\Capture_95.bmp">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="TruthCoords.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

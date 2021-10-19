@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -19,35 +20,41 @@ namespace OcrConsoleAppFx
         private Processor _processor = null;
         private readonly Regex _rgx = new Regex(@"^[0-9]{1,5}(?:.[0-9]{3})?$");
         private int _failureCount = -1;
+        private bool _isFarming = false;
 
-        public void Run()
+        public void Run(bool isFarming)
         {
-            _processor = new Processor(true);
+            _isFarming = isFarming;
+            _processor = new Processor(false);
             Console.Clear();
             int i = 0;
             while (true)
             {
-                if (_failureCount == -1 || (_failureCount > 50 && _failureCount%10 == 0) )
+                if (_failureCount == -1 || (_failureCount > 30 && _failureCount%10 == 0) )
                 {
                     _reference = FindBracketLocation();
                     if (_reference != null)
                     {
                         var height = Screen.PrimaryScreen.Bounds.Height;
                         var width = Screen.PrimaryScreen.Bounds.Width;
-                        Console.WriteLine();
-                        Console.WriteLine($"Height: {height}");
-                        Console.WriteLine($"Width: {width}");
-                        Console.WriteLine($"Reference Pixel is {_reference.Y} pixels from the TOP & {width - _reference.X} pixels from the RIGHT");
-                        Console.WriteLine();
+                        //Console.WriteLine();
+                        //Console.WriteLine($"Height: {height}");
+                        //Console.WriteLine($"Width: {width}");
+                        Console.SetCursorPosition(0, 0);
+                        Console.WriteLine($"Reference: [{_reference.Y},{_reference.X}]");
+                        //Console.WriteLine();
                     }
                 }
 
                 if (_reference != null)
                 {
-                    var byteArray = CapturePartOfScreen();
+
+                    var bitmap = CapturePartOfScreen();
+
+                    var byteArray = ImageToByte(bitmap);
 
                     if (byteArray != null)
-                    {
+                    {                       
                         var result = _processor.ProcessImage(byteArray);
 
                         var results = result.Split(' ');
@@ -57,25 +64,36 @@ namespace OcrConsoleAppFx
                             _failureCount++;
 
                             // just for testing now -> TBR
-                            Console.Write("\r{0}", result);
+                            Console.SetCursorPosition(0, 6);
+                            Console.WriteLine("Bad: {0}", result);
+                            
+                            if(_isFarming) bitmap.Save($"D:\\Capture_{i}.bmp", ImageFormat.Bmp);
+
                         }
-                        else {
-                            Console.Write("\r{0}", result);
+                        else
+                        {
+                            Console.SetCursorPosition(0, 4);
+                            Console.WriteLine("Good: {0}", result);
                             _failureCount = 0;
-                        }                                      
-                    }               
+                        }
+                    }
+                    else 
+                    {
+                        _failureCount++;
+                    }
                 }
                 else 
                 {
                     _failureCount++;
-                    Console.Write("\rNo Coordinates found on screen ");
+                    Console.SetCursorPosition(0, 2);
+                    Console.WriteLine("No Coordinates found!");
                 }
                 Thread.Sleep(100);
                 i++;
             }
         }
 
-        private byte[] CapturePartOfScreen()
+        private Bitmap CapturePartOfScreen()
         {
             try
             {
@@ -96,9 +114,8 @@ namespace OcrConsoleAppFx
 
 
                 }
-                //target.Save(@"D:\Test123.bmp", ImageFormat.Bmp);
 
-                return ImageToByte(target);
+                return target;
             }
             catch (Exception)
             {
@@ -155,7 +172,11 @@ namespace OcrConsoleAppFx
 
         private static Pixel FindCoordinates(byte[] byteArray)
         {
+            if (byteArray == null) return null;
             Pixel bracketPixel = null;
+
+            //byteArray = File.ReadAllBytes(@"E:\Test12345.bmp");
+
             using (var image = SixLabors.ImageSharp.Image.Load(byteArray))
             {
                 Parallel.For(1, image.Height, (y, yState) =>
@@ -180,7 +201,8 @@ namespace OcrConsoleAppFx
                         && IsFullYellowPixel(image, x, y + 10)
                         && IsFullYellowPixel(image, x, y + 11)
                         && IsFullYellowPixel(image, x - 1, y + 11)
-                        && !IsFullYellowPixel(image, x + 1, y + 11)
+                        && !IsFullYellowPixel(image, x +1, y + 12)
+                        //&& !IsFullYellowPixel(image, x + 1, y + 11)
                         )
                         {
                             bracketPixel = new Pixel(x, y-1);
@@ -197,7 +219,7 @@ namespace OcrConsoleAppFx
         private static bool IsFullYellowPixel(Image<Rgba32> image, int x, int y)
         {
             var hsl = HSLColor.ColorOfPixel(image, x, y);
-            return hsl.Hue >= 58 && hsl.Hue <= 66 && hsl.Luminosity > 0.7f;
+            return hsl.Hue >= 50 && hsl.Hue <= 66 && hsl.Luminosity > 0.5f;
         }
     }
 }
