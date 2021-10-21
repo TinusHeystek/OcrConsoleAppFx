@@ -14,19 +14,28 @@ namespace OcrConsoleAppFx
     public class TestRunner
     {
         private Processor _processor = null;
-        private const string ImageDirectory = @"Captures";
-        private const string ProcessDirectory = @"Images\Processed";
+        private static string _imageDirectory = @"Captures";
+        private static string _processDirectory = @"Images\Processed";
 
-        private static List<string> _truth = new List<string>(File.ReadAllLines(@"TruthCoords.txt"));
+        private static List<string> _truth;
         private static List<string> _notOKList = new List<string>();
         private static int _matchCounter = 0;
-        private static int _imagesCount = Directory.GetFiles(ImageDirectory, "*.bmp", SearchOption.TopDirectoryOnly).Length;
+        private static int _imagesCount;
         private static Stopwatch _sw;
         private static readonly Pixel _reference = new Pixel(260,1);
+        private static bool _isWindowMode;
 
-        public void Run()
+        public void Run(bool isWindowMode)
         {
-            _processor = new Processor(false);
+            _isWindowMode = isWindowMode;
+            _imageDirectory = _isWindowMode ? @"WindowCaptures" : @"Captures";
+            _processDirectory = _isWindowMode ? @"Images\WindowProcessed" :  @"Images\Processed";
+
+            _imagesCount = Directory.GetFiles(_imageDirectory, "*.bmp", SearchOption.TopDirectoryOnly).Length;
+
+            _truth = new List<string>(File.ReadAllLines( _isWindowMode ? @"WindowTruthCoords.txt" :  @"TruthCoords.txt"));
+
+        _processor = new Processor(_isWindowMode);
             Cleanup();
             _sw = Stopwatch.StartNew();
             for (int i = 0; i < _imagesCount; i++)
@@ -58,19 +67,19 @@ namespace OcrConsoleAppFx
 
         private void Cleanup()
         {
-            if (!Directory.Exists(ProcessDirectory))
-                Directory.CreateDirectory(ProcessDirectory);
+            if (!Directory.Exists(_processDirectory))
+                Directory.CreateDirectory(_processDirectory);
             else
             {
-                var files = Directory.GetFiles(ProcessDirectory, "*", SearchOption.TopDirectoryOnly).ToList();
+                var files = Directory.GetFiles(_processDirectory, "*", SearchOption.TopDirectoryOnly).ToList();
                 files.ForEach(File.Delete);
             }
         }
 
         private void ProcessImage(int number)
         {
-            var fileName = $"Capture_{number}.bmp";
-            var byteArray = File.ReadAllBytes(Path.Combine(ImageDirectory, fileName));
+            var fileName = _isWindowMode ?  $"WindowCapture_{number}.bmp" : $"Capture_{number}.bmp";
+            var byteArray = File.ReadAllBytes(Path.Combine(_imageDirectory, fileName));
 
             var results = _processor.ProcessImage(byteArray);
 

@@ -4,3 +4,6 @@
 
 /src/.vs/OcrConsoleAppFx/v16/TestStore/0
 /.vs
+/src/publish
+/src/Properties
+/src/WindowCaptures.zip

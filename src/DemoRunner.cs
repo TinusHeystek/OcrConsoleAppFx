@@ -22,10 +22,10 @@ namespace OcrConsoleAppFx
         private int _failureCount = -1;
         private bool _isFarming = false;
 
-        public void Run(bool isFarming)
+        public void Run(bool isFarming, bool isWindowed)
         {
             _isFarming = isFarming;
-            _processor = new Processor(false);
+            _processor = new Processor(isWindowed);
             Console.Clear();
             int i = 0;
             while (true)
@@ -37,12 +37,8 @@ namespace OcrConsoleAppFx
                     {
                         var height = Screen.PrimaryScreen.Bounds.Height;
                         var width = Screen.PrimaryScreen.Bounds.Width;
-                        //Console.WriteLine();
-                        //Console.WriteLine($"Height: {height}");
-                        //Console.WriteLine($"Width: {width}");
                         Console.SetCursorPosition(0, 0);
                         Console.WriteLine($"Reference: [{_reference.Y},{_reference.X}]");
-                        //Console.WriteLine();
                     }
                 }
 

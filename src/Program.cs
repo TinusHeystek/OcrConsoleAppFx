@@ -15,8 +15,10 @@ namespace OcrConsoleAppFx
         private enum RunMode
         {
             Demo,
-            Test,
-            Farming
+            TestFullscreen,
+            TestWindowed,
+            FarmingFullscreen,
+            FarmingWindowed
         }
 
         static void Main(string[] args)
@@ -32,13 +34,19 @@ namespace OcrConsoleAppFx
             switch (mode)
             {
                 case RunMode.Demo:
-                    new DemoRunner().Run(false);
+                    new DemoRunner().Run(false, false);
                     break;
-                case RunMode.Farming:
-                    new DemoRunner().Run(true);
+                case RunMode.FarmingFullscreen:
+                    new DemoRunner().Run(true, false);
                     break;
-                case RunMode.Test:
-                    new TestRunner().Run();
+                case RunMode.FarmingWindowed:
+                    new DemoRunner().Run(true, true);
+                    break;
+                case RunMode.TestFullscreen:
+                    new TestRunner().Run(false);
+                    break;
+                case RunMode.TestWindowed:
+                    new TestRunner().Run(true);
                     break;
                 default:
                     break;
@@ -48,7 +56,7 @@ namespace OcrConsoleAppFx
         private static RunMode ModePrompt()
         {
             Console.Clear();
-            Console.WriteLine("Press 0 to run Live Demo Mode \nPress 1 to run Test Mode \nPress 2 to run Farming mode");
+            Console.WriteLine("Press 0 to run Live Demo Mode \nPress 1 to run Fullscreen Farming mode \nPress 2 to run Windowed Farming mode \nPress 3 to run Fullscreen Test Mode \nPress 4 to run Windowed Test Mode ");
             char key = Console.ReadKey().KeyChar;
 
             switch (key)
@@ -56,14 +64,18 @@ namespace OcrConsoleAppFx
                 case '0':
                     return RunMode.Demo;
                 case '1':
-                    return RunMode.Test;
+                    return RunMode.FarmingFullscreen;
                 case '2':
-                    return RunMode.Farming;
+                    return RunMode.FarmingWindowed;
+                case '3':
+                    return RunMode.TestFullscreen;
+                case '4':
+                    return RunMode.TestWindowed;
                 default:
                     ModePrompt();
                         break;
             }
-            return RunMode.Test;     
+            return RunMode.TestFullscreen;     
         }
 
 
