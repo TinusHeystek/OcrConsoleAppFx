@@ -41,6 +41,14 @@ namespace OcrConsoleAppFx
         /// <returns>PreProcessed byte array</returns>
         public string ProcessImage(byte[] byteArray)
         {
+            if (_isWindowMode)
+            {
+                return ProcessImageLegacy(byteArray);
+            }
+            return ProcessImageNew(byteArray);
+        }
+        public string ProcessImageLegacy(byte[] byteArray)
+        {
             using (var img = Image.Load(byteArray))
             {
                 string text = string.Empty;
@@ -78,6 +86,31 @@ namespace OcrConsoleAppFx
                 return text;
             }
         }
+
+
+        public string ProcessImageNew(byte[] byteArray)
+        {
+            using (var img = Image.Load(byteArray))
+            {
+                string text = string.Empty;
+
+                for (int i = 0; i < 30; i++)
+                {
+
+                    if (img.Width < 9 * (i + 1)) continue;
+                    var rect = new Rectangle((9 * i) , 0, 9, 14);
+                    var newImg = img.Clone();
+                    
+                    newImg.Mutate(x => x.Crop(rect));
+                    text += GetChar(newImg);
+
+                }
+                text = text.TrimEnd('.').Replace("?", ".").Replace(". ", "").Replace("..", " ");
+
+                return text;
+            }
+        }
+
 
         private string GetChar(Image<Rgba32> image)
         {

@@ -51,7 +51,7 @@ namespace OcrConsoleAppFx
 
                     if (byteArray != null)
                     {                       
-                        var result = _processor.ProcessImage(byteArray);
+                        var result = _processor.ProcessImageNew(byteArray);
 
                         var results = result.Split(' ');
 
@@ -98,7 +98,9 @@ namespace OcrConsoleAppFx
                 g.CopyFromScreen(0, 0, 0, 0, bm.Size);
 
 
-                System.Drawing.Rectangle cropRect = new System.Drawing.Rectangle(_reference.X - 274, _reference.Y, 284, 14);
+                var maxWidth = Math.Min(Screen.PrimaryScreen.Bounds.Width - _reference.X, 284);
+
+                System.Drawing.Rectangle cropRect = new System.Drawing.Rectangle(_reference.X, _reference.Y,maxWidth,14 );
 
                 Bitmap target = new Bitmap(cropRect.Width, cropRect.Height);
 
@@ -130,7 +132,7 @@ namespace OcrConsoleAppFx
         private Pixel FindBracketLocation()
         {
             var screenshot = TopBarScreenShot();
-            return FindCoordinates(screenshot);
+            return FindCoordinates2(screenshot);
    
         }
 
@@ -155,7 +157,7 @@ namespace OcrConsoleAppFx
 
 
                 }
-                //target.Save(@"D:\Test1234.bmp", ImageFormat.Bmp);
+                target.Save(@"D:\Test1234.bmp", ImageFormat.Bmp);
 
                 return ImageToByte(target);
             }
@@ -166,56 +168,97 @@ namespace OcrConsoleAppFx
             }
         }
 
-        private static Pixel FindCoordinates(byte[] byteArray)
+        //private static Pixel FindCoordinates(byte[] byteArray)
+        //{
+        //    if (byteArray == null) return null;
+        //    Pixel bracketPixel = null;
+
+        //    //byteArray = File.ReadAllBytes(@"E:\Test12345.bmp");
+
+        //    using (var image = SixLabors.ImageSharp.Image.Load(byteArray))
+        //    {
+        //        Parallel.For(1, image.Height, (y, yState) =>
+        //        {
+        //            Parallel.For(1, image.Width - 1, (x, xState) =>
+        //            {
+        //                var hslColor = HSLColor.ColorOfPixel(image, x, y);
+
+        //                if (hslColor.Hue >= 58 
+        //                && hslColor.Hue <= 66
+        //                && image.Height - y > 12
+        //                && IsFullYellowPixel(image, x - 1, y)
+        //                && IsFullYellowPixel(image, x, y + 1)
+        //                && IsFullYellowPixel(image, x, y + 2)
+        //                && IsFullYellowPixel(image, x, y + 3)
+        //                && IsFullYellowPixel(image, x, y + 4)
+        //                && IsFullYellowPixel(image, x, y + 5)
+        //                && IsFullYellowPixel(image, x, y + 6)
+        //                && IsFullYellowPixel(image, x, y + 7)
+        //                && IsFullYellowPixel(image, x, y + 8)
+        //                && IsFullYellowPixel(image, x, y + 9)
+        //                && IsFullYellowPixel(image, x, y + 10)
+        //                && IsFullYellowPixel(image, x, y + 11)
+        //                && IsFullYellowPixel(image, x - 1, y + 11)
+        //                && !IsFullYellowPixel(image, x +1, y + 12)
+        //                //&& !IsFullYellowPixel(image, x + 1, y + 11)
+        //                )
+        //                {
+        //                    bracketPixel = new Pixel(x, y-1);
+        //                    xState.Break();
+        //                    yState.Break();
+        //                }
+        //            });
+        //        });
+        //    }
+        //    return bracketPixel;
+        //}
+
+
+        private static Pixel FindCoordinates2(byte[] byteArray)
         {
             if (byteArray == null) return null;
-            Pixel bracketPixel = null;
+            Pixel startPosition = null;
 
             //byteArray = File.ReadAllBytes(@"E:\Test12345.bmp");
 
             using (var image = SixLabors.ImageSharp.Image.Load(byteArray))
             {
-                Parallel.For(1, image.Height, (y, yState) =>
+                Parallel.For(1, image.Height - 12, (y, yState) =>
                 {
-                    Parallel.For(1, image.Width - 1, (x, xState) =>
+                    Parallel.For(1, image.Width - 300, (x, xState) =>
                     {
-                        var hslColor = HSLColor.ColorOfPixel(image, x, y);
+                        var hslColor = HSLColor.ColorOfPixel(image, x, y+1);
 
-                        if (hslColor.Hue >= 58 
-                        && hslColor.Hue <= 66
-                        && image.Height - y > 12
-                        && IsFullYellowPixel(image, x - 1, y)
-                        && IsFullYellowPixel(image, x, y + 1)
-                        && IsFullYellowPixel(image, x, y + 2)
-                        && IsFullYellowPixel(image, x, y + 3)
-                        && IsFullYellowPixel(image, x, y + 4)
-                        && IsFullYellowPixel(image, x, y + 5)
-                        && IsFullYellowPixel(image, x, y + 6)
-                        && IsFullYellowPixel(image, x, y + 7)
-                        && IsFullYellowPixel(image, x, y + 8)
-                        && IsFullYellowPixel(image, x, y + 9)
-                        && IsFullYellowPixel(image, x, y + 10)
-                        && IsFullYellowPixel(image, x, y + 11)
-                        && IsFullYellowPixel(image, x - 1, y + 11)
-                        && !IsFullYellowPixel(image, x +1, y + 12)
-                        //&& !IsFullYellowPixel(image, x + 1, y + 11)
-                        )
+                    if (hslColor.Hue >= 58
+                    && hslColor.Hue <= 66
+                    && PixelDefinitions.Position.All( p => IsFullYellowPixel(image, p, x, y))
+                    && PixelDefinitions.PositionNot.All( p => IsDarkPixel(image, p, x, y)))
                         {
-                            bracketPixel = new Pixel(x, y-1);
+                            startPosition = new Pixel(x+89, y-1);
                             xState.Break();
                             yState.Break();
                         }
                     });
                 });
             }
-            return bracketPixel;
+            return startPosition;
         }
 
 
-        private static bool IsFullYellowPixel(Image<Rgba32> image, int x, int y)
+
+        private static bool IsFullYellowPixel(Image<Rgba32> image, Pixel p, int x, int y)
         {
-            var hsl = HSLColor.ColorOfPixel(image, x, y);
+            var hsl = HSLColor.ColorOfPixel(image, p.X + x, p.Y + y);
             return hsl.Hue >= 50 && hsl.Hue <= 66 && hsl.Luminosity > 0.5f;
+        }
+
+        private static bool IsDarkPixel(Image<Rgba32> image, Pixel p, int x, int y)
+        {
+            var R = image[x + p.X, y + p.Y].R;
+            var G = image[x + p.X, y + p.Y].G;
+            var B = image[x + p.X, y + p.Y].B;
+
+            return R < 100 && G < 100 && B < 100;
         }
     }
 }

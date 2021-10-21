@@ -81,7 +81,7 @@ namespace OcrConsoleAppFx
             var fileName = _isWindowMode ?  $"WindowCapture_{number}.bmp" : $"Capture_{number}.bmp";
             var byteArray = File.ReadAllBytes(Path.Combine(_imageDirectory, fileName));
 
-            var results = _processor.ProcessImage(byteArray);
+            var results = _processor.ProcessImageLegacy(byteArray);
 
             if (_truth[number].Equals(results))
             {
@@ -95,7 +95,7 @@ namespace OcrConsoleAppFx
                 _notOKList.Add($"{number}: Expected: {_truth[number]}, actual: {results}");
             }
 
-            Console.WriteLine("OCR Output: " + number + " --> " + results);
+            Console.WriteLine("Output: " + number + " --> " + results);
         }
 
 
